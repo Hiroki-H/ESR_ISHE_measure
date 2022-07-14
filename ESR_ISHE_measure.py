@@ -5,9 +5,9 @@ import re
 import sys
 from turtle import update
 import pyvisa as visa
-import time  
-import matplotlib.pyplot as plt 
-import pandas as pd 
+import time
+import matplotlib.pyplot as plt
+import pandas as pd
 import matplotlib.cm as cm
 import numpy as np
 from multiprocessing.pool import ThreadPool
@@ -59,9 +59,9 @@ class ISHE_sys:
             self.update(i,np.sin(i/180*np.pi))
             time.sleep(0.05)
         return points,V
-    
+
     def ISHE_measure(self,address,waittime):
-        rm=visa.ResourceManager() 
+        rm=visa.ResourceManager()
         ke2182A = rm.open_resource(  address  )
         ke2182A.write(":SENSe:VOLTage:NPLCycles 1") # medium
         ke2182A.write(":SENSe:VOLTage:DFILter 0") # digital filter off
@@ -75,11 +75,11 @@ class ISHE_sys:
             V.append(Vnano)
             i+=1
             self.update(i,Vnano)
-            time.sleep(waittime)
+            time.sleep(float(waittime))
         return points,V
 
 
-    
+
         #スレッドをスタートさせる
     def start(self,address, waittime):
         thread = ThreadPoolExecutor()
@@ -115,7 +115,7 @@ class ISHE_sys:
 
 if __name__ == '__main__':
 
-        
+
     sg.theme('Light Blue 2')
 
     layout = [[sg.Text('measurement_system with keithley2182A(nanovoltmeter)')],
@@ -133,9 +133,9 @@ if __name__ == '__main__':
     # figとCanvasを関連付ける
     ISHE=ISHE_sys()
 
-    def startEvent(event):#スタートボタン押下時の処理
+    def startEvent(event,address,waittime):#スタートボタン押下時の処理
         ISHE.ROOP = True
-        ISHE.start()
+        ISHE.start(address,waittime)
 
     def startEvent_demo(event):#スタートボタン押下時の処理
         ISHE.ROOP = True
@@ -163,8 +163,8 @@ if __name__ == '__main__':
                 curve = p.plot( pen =(0, 114, 189), symbolBrush =(0, 114, 189),
                                     symbolPen ='w', symbol ='p', symbolSize = 14, name ="symbol ='p'")
                 p.showGrid(x=True,y=True)
-                p.setLabel('left', "Resistance", units='ohm')
-                p.setLabel('bottom', "Current", units='A')
+                p.setLabel('left', "Volatge", units='V')
+                p.setLabel('bottom', "data_number", units='')
                 a= startEvent(event,values['GPIB'],values['wtime'])
                 #x,y=ISHE.ISHE_measure()
             except Exception as e:
@@ -178,7 +178,6 @@ if __name__ == '__main__':
                 sg.popup('この操作は受け付けられないな( ･´ｰ･｀)\n'+str(e),title='Error')
         elif event == '-stop-':
             end_measure(event)
-            app.exec()
         elif event == '-clear-':
             try:
                 fig = ISHE.make_data_fig(ISHE.fig,points,V, make=False)
